@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Presentes - Chá de Panela Matriz</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    h1 { color: #004080; }
+    .section { margin-bottom: 30px; }
+    .gift { background: #fff; border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 8px; }
+    .hidden { display: none; }
+    button { padding: 8px 12px; background: gold; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #ffd700; }
+    label { display: block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Lista de Presentes - Chá de Panela Matriz</h1>
+
+  <div class="section">
+    <h2>Confirme sua presença</h2>
+    <input type="text" id="guestName" placeholder="Seu nome">
+    <button onclick="confirmarPresenca()">Confirmar Presença</button>
+  </div>
+
+  <div class="section">
+    <h2>Escolha um presente</h2>
+    <div id="giftList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Configuração do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6rbwQ14T1WuXWAfokC_h6Xj2cp5jQjo0",
+      authDomain: "chadepanelamatriz.firebaseapp.com",
+      databaseURL: "https://chadepanelamatriz-default-rtdb.firebaseio.com",
+      projectId: "chadepanelamatriz",
+      storageBucket: "chadepanelamatriz.firebasestorage.app",
+      messagingSenderId: "1028665803235",
+      appId: "1:1028665803235:web:b03a01a183039dcff620d6",
+      measurementId: "G-7Y4MLK8NQX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const presentes = [
+      "Balde retrátil + Prendedor de roupa",
+      "Kit de Cabides Preto",
+      "Escova de Sanitário",
+      "Jogo de toalhas de banho + Rosto",
+      "Lixeira INOX 3L",
+      "Mop Spray",
+      "Tapete para banheiro",
+      "Vassoura + Rodo",
+      "Panos de Chão + Pá de lixo",
+      "Kit de banheiro vidro ou inox",
+      "Abridor de latas + Pegador de salada",
+      "Assadeira de vidro com tampa",
+      "Aparelho de Jantar",
+      "Bandeja de café da manhã",
+      "Boleira",
+      "Bule",
+      "Canecas de cerâmicas",
+      "Colher de pau + Amolador de facas",
+      "Concha + Escumadeira",
+      "Conjunto de facas para queijo",
+      "Cuscuzeira",
+      "Escorredor de arroz",
+      "Forma para bolo redondo",
+      "Forma para pudim",
+      "Frigideira antiaderente",
+      "Garrafa térmica de café",
+      "Jarra para Suco de vidro",
+      "Jogo de assadeiras Marinex Opaline",
+      "Jogo de copos vidro",
+      "Jogo de facas",
+      "Jogo de panelas inox 3 peças",
+      "Jogo de panelas inox 2 peças",
+      "Jogo de pratos fundos",
+      "Jogo de pratos rasos",
+      "Jogo de sobremesas",
+      "Jogo de tábuas de vidro",
+      "Jogo de taças de sobremesa",
+      "Jogo de taças de vidro",
+      "Jogo de travessas de vidro",
+      "Jogo de xícaras com pires",
+      "Kit de utensílios de silicone",
+      "Kit tigelas Bowl porcelana",
+      "Leiteira",
+      "Luva para forno",
+      "Mixer vertical",
+      "Paliteiro + saleiro de vidro",
+      "Panela de Pressão",
+      "Panela Wok Antiaderente com tampa",
+      "Pano de prato + descascador de legumes",
+      "Panquequeira Antiaderente",
+      "Pegador de massas + Peneira",
+      "Pegador de salada + Copo medidor",
+      "Petisqueira redonda",
+      "Porta azeite + vinagre de vidro",
+      "Porta Frios Herméticos",
+      "Porta temperos de vidro",
+      "Potes herméticos",
+      "Queijeira + manteigueira francesa",
+      "Ralador inox + colher de sorvete inox",
+      "Saladeira",
+      "Talheres em aço inox",
+      "Tabuleiro redondo inox",
+      "Tabuleiro quadrado inox",
+      "Taças de vidro",
+      "Funil + Esteira de jogo de mesa",
+      "Rodo de pia",
+      "Saca rolha - Tramontina",
+      "Espremedor de alho",
+      "Coador para filtro de papel",
+      "Rolo de pastel",
+      "Fruteira de vidro",
+      "Kit de Descanso de panela",
+      "Tesoura para cozinha"
+    ];
+
+    // Mostrar lista
+    function exibirLista() {
+      const container = document.getElementById("giftList");
+      container.innerHTML = "";
+      const giftsRef = ref(db, 'presentes');
+      onValue(giftsRef, (snapshot) => {
+        const dados = snapshot.val() || {};
+        container.innerHTML = "";
+        presentes.forEach((item, index) => {
+          if (!dados[item]) {
+            const div = document.createElement("div");
+            div.className = "gift";
+            div.innerHTML = `
+              <strong>${item}</strong>
+              <label>Seu nome: <input type="text" id="nome-${index}" /></label>
+              <label>Forma de entrega:
+                <select id="entrega-${index}">
+                  <option value="Pix">Via Pix</option>
+                  <option value="Evento">Levar no Evento</option>
+                </select>
+              </label>
+              <button onclick="escolherPresente(${index})">Escolher este presente</button>
+            `;
+            container.appendChild(div);
+          }
+        });
+      });
+    }
+
+    window.escolherPresente = function(index) {
+      const nome = document.getElementById(`nome-${index}`).value.trim();
+      const entrega = document.getElementById(`entrega-${index}`).value;
+      const item = presentes[index];
+      if (!nome) return alert("Digite seu nome.");
+      const refPresente = ref(db, `presentes/${item}`);
+      set(refPresente, {
+        nome: nome,
+        entrega: entrega
+      }).then(() => {
+        alert("Presente escolhido com sucesso!");
+        exibirLista();
+      });
+    };
+
+    window.confirmarPresenca = function() {
+      const nome = document.getElementById("guestName").value.trim();
+      if (!nome) return alert("Digite seu nome.");
+      const presencaRef = ref(db, 'presencas');
+      push(presencaRef, { nome: nome }).then(() => {
+        alert("Presença confirmada!");
+        document.getElementById("guestName").value = "";
+      });
+    };
+
+    exibirLista();
+  </script>
+</body>
+</html>
